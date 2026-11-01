@@ -668,7 +668,15 @@ impl Game<'_> {
                 });
                 let mut me = TabPlayer::new(uuid, PLAYER_NAME);
                 me.game_mode = self.mode_id();
-                me.skin = "entity/player/wide/steve".into();
+                if let Some((skin, slim)) = self.own_skin() {
+                    me.skin = skin.clone();
+                    if let Some(model) = self.player_model.as_mut() {
+                        model.skin = Some(skin);
+                        model.slim = slim;
+                    }
+                } else {
+                    me.skin = tab_list::default_skin(uuid).into();
+                }
                 let guests = self.lan.as_ref().map_or(&[][..], |h| &h.hub.guests);
                 let players = local_tab_players(me, guests);
                 let upside_down = players

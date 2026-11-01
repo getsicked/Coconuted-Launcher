@@ -3100,6 +3100,16 @@ impl Game<'_> {
         let (value, signature) = profile.textures()?;
         Some(skins::unpack(&value, signature, &skins::TEXTURE_URIS))
     }
+    /// Resolve the signed-in player's skin for an integrated world as well as
+    /// the remote player list. The profile and image are loaded asynchronously.
+    pub(super) fn own_skin(&mut self) -> Option<(String, bool)> {
+        let textures = self.own_textures()?;
+        let skin = {
+            let mut downloads = self.skin_downloads.borrow_mut();
+            horizon_client::skins::lookup(&textures, false, |kind, url| downloads.state(kind, url))
+        }?;
+        self.again_skin(&skin).then_some((skin, textures.slim))
+    }
     /// `PlayerInfo.getSkin` for every player entity, including NPCs that are
     /// never in the tab list: resolve each profile's textures and give the
     /// level's player models their skin.
