@@ -2,6 +2,22 @@
 
 Coconuted Launcher is a Windows launcher and client fork of [Horizon](https://github.com/horizon-rust/horizon). It supports local names and Ely.by accounts. The matching client in this repository handles Ely.by server authentication.
 
+[Download the Windows launcher](https://github.com/getsicked/Coconuted-Launcher/releases/latest)
+
+## Preview
+
+![Coconuted Launcher tour](media/launcher-tour.gif)
+
+### Home screen
+
+![Coconuted Launcher home screen](media/launcher-home.png)
+
+### Accounts and versions
+
+![Coconuted Launcher account settings](media/launcher-account.png)
+
+![Coconuted Launcher versions](media/launcher-versions.png)
+
 ## Build on Windows
 
 Install the stable Rust toolchain and the Windows C++ build tools. Build both programs from the same commit:
