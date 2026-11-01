@@ -1,6 +1,14 @@
 //! Embeds Coconuted's icon (`packaging/icons/coconuted.ico`) in the Windows executable, as icon
 //! resource 1: Explorer and the task bar show it, and the window takes it as its icon.
 fn main() {
+    println!("cargo:rustc-check-cfg=cfg(coconuted_embedded_client)");
+    println!("cargo:rerun-if-env-changed=COCONUTED_CLIENT_EXE");
+    if let Ok(client) = std::env::var("COCONUTED_CLIENT_EXE") {
+        assert!(std::path::Path::new(&client).is_file(), "missing client executable: {client}");
+        println!("cargo:rerun-if-changed={client}");
+        println!("cargo:rustc-env=COCONUTED_CLIENT_EXE={client}");
+        println!("cargo:rustc-cfg=coconuted_embedded_client");
+    }
     let dir = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_default();
     let ico = format!("{dir}/../packaging/icons/coconuted.ico");
     println!("cargo:rerun-if-changed={ico}");

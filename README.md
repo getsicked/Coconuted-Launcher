@@ -7,11 +7,12 @@ Coconuted Launcher is a Windows launcher and client fork of [Horizon](https://gi
 Install the stable Rust toolchain and the Windows C++ build tools. Build both programs from the same commit:
 
 ```powershell
-cargo build --release --manifest-path launcher/Cargo.toml
 cargo build --profile fast -p horizon-client --bin horizon-client
+$env:COCONUTED_CLIENT_EXE = (Resolve-Path 'target/fast/horizon-client.exe').Path
+cargo build --release --manifest-path launcher/Cargo.toml
 ```
 
-The output files are `launcher/target/release/horizon-launcher.exe` and `target/fast/horizon-client.exe`. Put them in the same folder, naming the client `coconuted-client.exe`. The launcher can then be named `Coconuted Launcher.exe`.
+The launcher embeds the matching client and extracts it to its application data folder when the game starts. The output file is `launcher/target/release/horizon-launcher.exe`; it can be named `Coconuted Launcher.exe`.
 
 ## Accounts
 

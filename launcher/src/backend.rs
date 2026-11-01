@@ -1796,6 +1796,17 @@ pub fn client_command(tag: &str) -> Command {
 /// The game's program: on macOS the one inside the version's Horizon.app, so the Dock and Cmd+Tab
 /// show Horizon's name and icon (game_app.rs); the bare binary elsewhere, or if that fails.
 fn client_program(tag: &str) -> PathBuf {
+    #[cfg(coconuted_embedded_client)]
+    {
+        let _ = tag;
+        return embedded_client_program().unwrap_or_else(|error| {
+            eprintln!("Cannot prepare the bundled game client: {error}");
+            data_dir().join("bin").join("coconuted-client-unavailable.exe")
+        });
+    }
+
+    #[cfg(not(coconuted_embedded_client))]
+    {
     // A bundled Coconuted client carries the Ely.by session service changes.
     if let Ok(exe) = std::env::current_exe() {
         if let Some(dir) = exe.parent() {
@@ -1816,6 +1827,30 @@ fn client_program(tag: &str) -> PathBuf {
         Err(e) => eprintln!("Starting the game outside {}: {e}", crate::game_app::APP),
     }
     dir.join(CLIENT)
+    }
+}
+
+#[cfg(coconuted_embedded_client)]
+fn embedded_client_program() -> Result<PathBuf, String> {
+    use sha2::{Digest, Sha256};
+    const CLIENT_BYTES: &[u8] = include_bytes!(env!("COCONUTED_CLIENT_EXE"));
+    let hash = Sha256::digest(CLIENT_BYTES);
+    let name = format!("coconuted-client-{:x}.exe", hash);
+    let path = data_dir().join("bin").join(name);
+    if std::fs::read(&path)
+        .ok()
+        .is_some_and(|bytes| Sha256::digest(&bytes) == hash)
+    {
+        return Ok(path);
+    }
+    std::fs::create_dir_all(path.parent().unwrap()).map_err(|e| e.to_string())?;
+    let temporary = path.with_extension(format!("{}.tmp", std::process::id()));
+    std::fs::write(&temporary, CLIENT_BYTES).map_err(|e| e.to_string())?;
+    if path.exists() {
+        std::fs::remove_file(&path).map_err(|e| e.to_string())?;
+    }
+    std::fs::rename(&temporary, &path).map_err(|e| e.to_string())?;
+    Ok(path)
 }
 
 pub fn server_command(tag: &str, folder: &Path) -> Command {
